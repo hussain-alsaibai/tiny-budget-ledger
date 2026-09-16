@@ -1,0 +1,61 @@
+# tiny-budget-ledger
+
+> File-backed per-task spend ledger for autonomous AI agents.
+> Stdlib only. ~440 lines. Crashes safe.
+
+## What it is
+A tiny, stdlib-only Python library that tracks USD and token spend against
+monthly and per-task caps in an append-only JSONL ledger. Refuses spends that
+would push a budget over its limit, with hooks for warn / block / monthly
+rollover.
+
+## When to use it
+- You're running an autonomous cron, agent, or fleet and need a hard ceiling on per-run, per-task, or monthly spend.
+- You want a crash-safe ledger (each write is `fsync`'d) you can audit later.
+- You want to gate "expensive LLM calls" cheaply without pulling in a 10MB SDK.
+- You need a BudgetError → switch-model pattern (gpt-4o → kimi-k2.6 when low).
+
+## When NOT to use it
+- You need multi-process distributed locking stronger than flock — use Postgres.
+- You want a hosted dashboard — this is library-first.
+- Your spend units aren't USD + tokens (e.g. compute-seconds and GPU hours).
+
+## Public API
+- `BudgetLedger(path, monthly_usd=None, monthly_tokens=None, per_task_usd=None, on_warn=None, on_block=None, rollover_policy="monthly", soft_warn_ratio=0.8)`
+  - `record_spend(task_id, usd=0.0, tokens=0, prompt_tokens=0, completion_tokens=0, model="unknown", note="", tags=None, allow_overrun=False) -> SpendRecord`
+  - `can_spend(usd=0.0, tokens=0, task_id=None) -> bool`
+  - `summary() -> dict` — current month totals + remaining + top-5 tasks.
+  - `drain() -> list[SpendRecord]` — move records older than current month off disk; returns them.
+  - `rollover_if_needed() -> bool` — manual month rollover trigger.
+  - `list_records(since_ts=None) -> list[SpendRecord]` — audit query.
+- `BudgetLedgerAsync(ledger)` — thin async wrapper; `await record_spend / can_spend / summary / rollover_if_needed`.
+- `attach_to_llm_router(router_callable, ledger, *, usd_per_call=0.0, tokens_per_call=0, model_attr="model")` — decorator wrapping any LLM-call function to auto-record from `.usage`.
+- `BudgetError`, `BudgetExceeded(field, current, attempted, limit, task_id=None)` — exceptions.
+- `SpendRecord` — dict-shaped record with keys `ts, task_id, usd, tokens, prompt_tokens, completion_tokens, model, note, tags`.
+
+## Persistence
+- JSONL file. Append-only writes with `flush() + os.fsync()`.
+- Best-effort `fcntl.flock` for cross-process safety; primary safety is per-process `RLock`.
+- Replay from disk on construction; survives crashes and restarts cleanly.
+
+## Integration with OpenClaw ecosystem
+- `tiny-cost-tracker` — feeds per-call cost into `record_spend`.
+- `tiny-llm-router` — its `cost_cap_reached()` check can call `can_spend()` before dispatch.
+- `tiny-budget` (Node.js) — sibling library for JS agents; same model.
+- `tiny-cron` — wrap a job with budget gates.
+- `tiny-workflow-engine` — gate step transitions on `can_spend()`.
+
+## Installation
+```bash
+pip install tiny-budget-ledger
+# or vendor the single file
+```
+
+## Common pitfalls
+- Setting `monthly_tokens=int(0)` disables token capping (use `None`).
+- Forgetting `allow_overrun=True` in best-effort paths causes hard exceptions.
+- The lock is in-process; use Postgres for cross-process transactions.
+- `on_warn` fires once per (axis, month) tuple to avoid log spam.
+
+## Version
+0.1.0 (2026-09-16)

@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tiny-budget-ledger"
+version = "0.1.0"
+description = "File-backed per-task spend ledger for autonomous AI agents. Stdlib only."
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "MIT" }
+authors = [
+    { name = "Hussain Al-Saibai", email = "hussain.alsaibai@gmail.com" },
+]
+keywords = ["budget", "ledger", "cost", "ai-agent", "openclaw", "cron", "autonomous", "rate-limiting", "spend"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/hussain-alsaibai/tiny-budget-ledger"
+Repository = "https://github.com/hussain-alsaibai/tiny-budget-ledger"
+Issues = "https://github.com/hussain-alsaibai/tiny-budget-ledger/issues"
+
+[tool.setuptools]
+py-modules = ["tiny_budget_ledger"]
+
+[tool.setuptools.package-data]
+"*" = ["README.md", "LICENSE", "llms.txt"]
