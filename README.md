@@ -57,7 +57,8 @@ zero deps.
 
 ```bash
 # pip (when published)
-pip install tiny-budget-ledger
+# From GitHub (recommended -- not yet on PyPI)
+pip install git+https://github.com/hussain-alsaibai/tiny-budget-ledger.git
 
 # Or just copy the single file
 curl -O https://raw.githubusercontent.com/hussain-alsaibai/tiny-budget-ledger/main/tiny_budget_ledger.py
