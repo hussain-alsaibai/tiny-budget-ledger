@@ -46,8 +46,10 @@ rollover.
 - `tiny-workflow-engine` — gate step transitions on `can_spend()`.
 
 ## Installation
+NOTE: unpublished on PyPI -- the bare name is not on the index, so the `pip install <name>` form 404s. The URL below is the install.
+
 ```bash
-pip install tiny-budget-ledger
+pip install "tiny-budget-ledger @ git+https://github.com/hussain-alsaibai/tiny-budget-ledger.git"
 # or vendor the single file
 ```
 
